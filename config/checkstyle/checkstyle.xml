@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "http://www.puppycrawl.com/dtds/checkstyle_1_3.dtd">
+
+<module name="ZoomTranscriber">
+    <property name="severity" value="warning"/>
+    <property name="fileExtensions" value="java, groovy, kt"/>
+    
+    <!-- Constructor-based dependency injection enforcement -->
+    <rule ref="category/java/design.xml/ConstructorDeclaration"/>
+    
+    <!-- var/val usage enforcement -->
+    <rule ref="category/java/coding.xml/LocalVariableName"/>
+    
+    <!-- Separate files for all types -->
+    <rule ref="category/java/design.xml/OneClassPerFile"/>
+    
+    <!-- Cyclomatic complexity limit -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="max" value="10"/>
+        </properties>
+    </rule>
+    
+    <!-- Code duplication prevention -->
+    <rule ref="category/java/size.xml/TooManyMethods"/>
+    
+    <!-- Self-documenting code -->
+    <rule ref="category/java/naming.xml/ShortVariable"/>
+    <rule ref="category/java/naming.xml/LongVariable"/>
+    
+    <!-- Import organization -->
+    <rule ref="category/java/imports.xml/TooManyImports"/>
+    <rule ref="category/java/imports.xml/UnusedImports"/>
+    
+    <!-- Exception handling -->
+    <rule ref="category/java/design.xml/ExceptionAsFlowControl"/>
+    
+    <!-- JPA entity best practices -->
+    <rule ref="category/java/design.xml/ImmutableField"/>
+    <rule ref="category/java/metrics.xml/ClassFanOutComplexity"/>
+</module>

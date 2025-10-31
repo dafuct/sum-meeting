@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<ruleset name="ZoomTranscriber Custom Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+    <description>
+        Custom PMD ruleset for Zoom Transcriber project enforcing constitutional requirements
+    </description>
+
+    <!-- Constructor-based dependency injection enforcement -->
+    <rule ref="category/java/design.xml/ConstructorDeclaration"
+          message="All dependencies MUST be injected through constructors">
+        <priority>1</priority>
+    </rule>
+
+    <!-- Cyclomatic complexity enforcement -->
+    <rule ref="category/java/design.xml/CyclomaticComplexity"
+          message="Cyclomatic complexity must not exceed 10 per function">
+        <properties>
+            <property name="max" value="10" />
+            <property name="reportLevel" value="error" />
+        </properties>
+        <priority>1</priority>
+    </rule>
+
+    <!-- Code duplication prevention -->
+    <rule ref="category/java/size.xml/TooManyMethods"
+          message="Classes should have minimal methods to prevent code duplication">
+        <properties>
+            <property name="max" value="15" />
+        </properties>
+        <priority>2</priority>
+    </rule>
+
+    <!-- Self-documenting code enforcement -->
+    <rule ref="category/java/naming.xml/ShortVariable"
+          message="Local variables MUST use 'var' keyword">
+        <priority>2</priority>
+    </rule>
+
+    <rule ref="category/java/naming.xml/LongVariable"
+          message="Variable names should be descriptive but not excessively long">
+        <priority>3</priority>
+    </rule>
+
+    <!-- Import organization -->
+    <rule ref="category/java/imports.xml/TooManyImports"
+          message="Classes should have minimal imports">
+        <properties>
+            <property name="max" value="10" />
+        </properties>
+        <priority>3</priority>
+    </rule>
+
+    <rule ref="category/java/imports.xml/UnusedImports"
+          message="Unused imports should be removed">
+        <priority>3</priority>
+    </rule>
+
+    <!-- Exception handling -->
+    <rule ref="category/java/design.xml/ExceptionAsFlowControl"
+          message="Exceptions should not be used for flow control">
+        <priority>2</priority>
+    </rule>
+
+    <!-- JPA entity best practices -->
+    <rule ref="category/java/design.xml/ImmutableField"
+          message="Entity fields should be properly designed">
+        <priority>2</priority>
+    </rule>
+
+    <!-- Performance considerations -->
+    <rule ref="category/java/metrics.xml/ClassFanOutComplexity"
+          message="Classes should have low coupling">
+        <priority>3</priority>
+    </rule>
+
+    <!-- Avoid nested classes -->
+    <rule ref="category/java/design.xml/TooDeepNesting"
+          message="Avoid deeply nested code structures">
+        <priority>2</priority>
+    </rule>
+
+</ruleset>

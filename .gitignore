@@ -1,0 +1,91 @@
+# Compiled Java classes
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Gradle
+.gradle/
+build/
+.gradlet/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+*.log
+
+# Environment
+.env
+.env.*
+application-local.properties
+
+# Temporary
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Database
+*.db
+*.sqlite
+*.h2.db
+
+# Audio/Video (potential project files)
+*.wav
+*.mp3
+*.mp4
+*.avi
+*.mov
+
+# Ollama
+ollama/
+models/
+
+# Installation
+install/
+dist/
+
+# Coverage
+coverage/
+*.exec
+jacoco/
+
+# Node.js (if any frontend components)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Documentation
+docs/_build/
+site/
+
+# Backup
+backup/
+*.bak
+*.backup
+
+.qwen
+.specify
+.vscode/
+specs/
+QWEN.md
