@@ -37,15 +37,6 @@ public class Transcription {
     
     public Transcription() {
         this.createdAt = LocalDateTime.now();
-        this.confidence = 0.0;
-    }
-    
-    public Transcription(MeetingSession meetingSession, String text, LocalDateTime timestamp, Integer segmentNumber) {
-        this();
-        this.meetingSession = meetingSession;
-        this.text = text;
-        this.timestamp = timestamp;
-        this.segmentNumber = segmentNumber;
     }
     
     public UUID getId() {
@@ -112,18 +103,33 @@ public class Transcription {
         this.createdAt = createdAt;
     }
     
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+    }
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         
-        var that = (Transcription) o;
-        return id != null && id.equals(that.id);
+        var other = (Transcription) o;
+        return java.util.Objects.equals(id, other.id) &&
+               java.util.Objects.equals(meetingSession, other.meetingSession) &&
+               java.util.Objects.equals(timestamp, other.timestamp) &&
+               java.util.Objects.equals(text, other.text) &&
+               java.util.Objects.equals(speakerId, other.speakerId) &&
+               java.util.Objects.equals(confidence, other.confidence) &&
+               java.util.Objects.equals(segmentNumber, other.segmentNumber);
     }
     
     @Override
     public int hashCode() {
-        return id != null ? id.hashCode() : 0;
+        return java.util.Objects.hash(id, meetingSession, timestamp, text, speakerId, confidence, segmentNumber);
     }
     
     @Override
@@ -136,6 +142,7 @@ public class Transcription {
                 ", text='" + text + '\'' +
                 ", confidence=" + confidence +
                 ", segmentNumber=" + segmentNumber +
+                ", createdAt=" + createdAt +
                 '}';
     }
 }
