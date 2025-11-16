@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-@RestController
+@RestController("apiInstallationController")
 @RequestMapping("/api/v1/system/installation")
 @CrossOrigin(origins = "*")
 public class InstallationController {

@@ -13,9 +13,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import jakarta.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-@Configuration
-@EnableJpaRepositories(basePackages = "com.zoomtranscriber.core.storage")
-@ConfigurationProperties(prefix = "spring.datasource")
+//@Configuration
+//@ConfigurationProperties(prefix = "spring.datasource")
 public class DatabaseConfig {
     
     private String url;

@@ -1,131 +1,217 @@
-# Zoom Meeting Transcriber Application Configuration
-
+# Spring Boot Configuration for Zoom Transcriber
+server:
+  port: 8080
+  servlet:
+    context-path: /
+    
 spring:
   application:
-    name: Zoom Meeting Transcriber
-    version: 1.0.0
-    
-  # Database Configuration
+    name: zoom-transcriber
+
+  # Database configuration for development
   datasource:
-    url: jdbc:mysql://localhost:3306/zoom_transcriber
-    username: ${DB_USERNAME:zoomtranscriber}
-    password: ${DB_PASSWORD:password}
-    driver-class: com.mysql.cj.jdbc.Driver
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 30000
-      
-  # JPA Configuration
-  jpa:
-    hibernate:
-      ddl-auto: update
-      show-sql: false
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.MySQLDialect
-          format_sql: true
-          
-  # WebFlux Configuration
-  webflux:
-    base-path: /api/v1
-    
-  # Jackson Configuration for JSON processing
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-      date-format: yyyy-MM-dd'T'HH:mm:ss
-    deserialization:
-      fail-on-unknown-properties: false
-      
-  # Logging Configuration
-  output:
-    ansi:
-      enabled: always
-    pattern:
-      console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-      file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-    file:
-      name: logs/zoom-transcriber.log
-      max-size: 10MB
-      max-history: 30
-      
-# Application-specific Configuration
-app:
-  # Audio Configuration
-  audio:
-    buffer-size-ms: 100
-    overlap-ms: 50
-    sample-rate: 16000
-    bit-depth: 16
-    channels: 1
-    max-file-size-mb: 100
-    
-  # Transcription Configuration
-  transcription:
-    confidence-threshold: 0.7
-    max-segment-length: 10000
-    latency-target-ms: 3000
-    
-  # Ollama Configuration
-  ollama:
-    host: localhost
-    port: 11434
-    model: qwen2.5:0.5b
-    timeout-ms: 30000
-    max-retry-attempts: 3
-    
-  # Performance Configuration
-  performance:
-    max-cpu-usage-percent: 80
-    max-memory-mb: 1024
-    monitoring-enabled: true
-    
-  # Installation Configuration
-  installation:
-    auto-install-java: true
-    auto-install-ollama: true
-    java-version: 21
-    ollama-version: latest
-    
-  # UI Configuration
-  ui:
-    theme: default
-    auto-save-interval-min: 5
-    show-confidence-scores: true
-    font-size: 12
-    
-  # Security Configuration
-  security:
-    encrypt-sensitive-config: true
-    session-timeout-min: 30
-    
----
-# Development Profile Configuration
----
-spring:
-  config:
-    activate: on-dev
-    
-  datasource:
-    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
     username: sa
-    password: 
-    
+    password: ""
+
+  # JPA/Hibernate configuration
   jpa:
     hibernate:
       ddl-auto: create-drop
-      show-sql: true
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+
+  # Jackson configuration
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+
+  # Web configuration
+  webflux:
+    base-path: /api
+    
+# Management and Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    loggers:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: 60s
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.75,0.95,0.99
+    tags:
+      application: ${spring.application.name}
+      instance: ${HOSTNAME:${spring.application.name}-${random.uuid}}
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
       
-  # Override with environment variables for development
-app:
-  audio:
-    device-name: MockAudioDevice
+# Logging Configuration
+logging:
+  level:
+    com.zoomtranscriber: INFO
+    com.zoomtranscriber.performance: DEBUG
+    com.zoomtranscriber.monitoring: DEBUG
+    com.zoomtranscriber.structured: INFO
+    com.zoomtranscriber.metrics: INFO
+    org.springframework.web: INFO
+    org.springframework.web.reactive: INFO
+    reactor.netty: INFO
+    root: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
+  file:
+    name: logs/zoom-transcriber.log
+    max-size: 100MB
+    max-history: 30
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      total-size-cap: 10GB
+      
+# Zoom Transcriber Specific Configuration
+zoom:
+  transcriber:
+    monitoring:
+      enabled: true
+      metrics-export-interval: 60s
+      health-check-interval: 30s
+      performance-tracking: true
+      error-tracking: true
+    audio:
+      sample-rate: 44100
+      bit-depth: 16
+      channels: 2
+      buffer-size: 4096
+    transcription:
+      model: whisper-1
+      language: en-US
+      confidence-threshold: 0.7
+      enable-punctuation: true
+      enable-capitalization: true
+    ai-service:
+      provider: ollama
+      timeout: 30s
+      retry-attempts: 3
+      retry-delay: 1s
+      
+# Performance Monitoring Configuration
+performance:
+  monitoring:
+    enabled: true
+    collection-interval: 10s
+    export-interval: 60s
+    thresholds:
+      cpu-warning: 70.0
+      cpu-critical: 85.0
+      memory-warning: 75.0
+      memory-critical: 90.0
+      error-rate-warning: 0.05
+      error-rate-critical: 0.10
+      
+# Health Check Configuration
+health:
+  check:
+    audio-service:
+      enabled: true
+      timeout: 5s
+      interval: 30s
+    transcription-service:
+      enabled: true
+      timeout: 10s
+      interval: 30s
+    ai-service:
+      enabled: true
+      timeout: 15s
+      interval: 30s
+    system-resources:
+      enabled: true
+      interval: 10s
+      
+# Error Tracking Configuration
+error:
+  tracking:
+    enabled: true
+    cleanup-interval: 1h
+    retention-period: 24h
+    alerting:
+      enabled: true
+      error-threshold-per-minute: 10
+      critical-error-threshold-per-hour: 5
+      error-rate-warning-threshold: 0.05
+      error-rate-critical-threshold: 0.10
+      
+# Log Configuration for Structured Logging
+structured:
+  logging:
+    enabled: true
+    json-format: true
+    include-stack-trace: true
+    include-mdc: true
+    correlation-id-header: X-Correlation-ID
     
-  ollama:
-    host: ${OLLAMA_HOST:localhost}
-    port: ${OLLAMA_PORT:11434}
-    model: ${OLLAMA_MODEL:qwen2.5:0.5b}
-    
-  performance:
-    monitoring-enabled: false
+# Metrics Collection Configuration
+metrics:
+  collection:
+    enabled: true
+    interval: 10s
+    export:
+      prometheus:
+        enabled: true
+        endpoint: /actuator/prometheus
+      jvm:
+        enabled: true
+      system:
+        enabled: true
+      custom:
+        enabled: true
+        
+# Thread Pool Configuration
+thread-pool:
+  async:
+    core-size: 4
+    max-size: 16
+    queue-capacity: 100
+    thread-name-prefix: zoom-async-
+  health-check:
+    core-size: 2
+    max-size: 8
+    queue-capacity: 50
+    thread-name-prefix: zoom-health-
+  metrics:
+    core-size: 2
+    max-size: 8
+    queue-capacity: 50
+    thread-name-prefix: zoom-metrics-

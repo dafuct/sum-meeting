@@ -1,23 +1,24 @@
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.0'
-    id 'io.spring.dependency-management' version '1.1.4'
-    id 'org.openjfx.javafxplugin' version '0.1.0'
+    id 'io.spring.dependency-management' version '1.1.5'
     id 'application'
-}
+    id 'com.github.spotbugs' version '5.0.14'
+    id 'jacoco'
+    id 'checkstyle'
+    id 'pmd'
+    }
 
 group = 'com.zoomtranscriber'
 version = '1.0.0'
 
+application {
+    mainClass = 'com.zoomtranscriber.ZoomTranscriberApplication'
+}
+
 java {
     sourceCompatibility = '21'
     targetCompatibility = '21'
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
-    }
 }
 
 repositories {
@@ -33,45 +34,55 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    
-    // JavaFX
-    implementation 'org.openjfx:javafx-controls:21'
-    implementation 'org.openjfx:javafx-fxml:21'
-    
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // JWT Security
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+
     // Database
-    // implementation 'mysql:mysql-connector-j:8.2.0' // Temporarily commented out
-    
+    implementation 'mysql:mysql-connector-java:8.0.33'
+    runtimeOnly 'com.h2database:h2'
+
     // JSON Processing
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    
+
     // Configuration Processor
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-    
+
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'com.h2database:h2'
-    
+
     // JNA for native library access
     implementation 'net.java.dev.jna:jna:5.13.0'
-    
+
+    // Micrometer for metrics collection
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'io.micrometer:micrometer-core'
+
+    // Logback for logging
+    implementation 'ch.qos.logback:logback-classic'
+    implementation 'ch.qos.logback:logback-core'
+
+    // AspectJ for AOP
+    implementation 'org.aspectj:aspectjweaver'
+    implementation 'org.aspectj:aspectjrt'
+
     // Optional GraalVM
     compileOnly 'org.graalvm.sdk:graal-sdk:23.1.0'
 }
 
 test {
     useJUnitPlatform()
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
-}
-
-javafx {
-    version = '21'
-    modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.base' ]
 }
 
 jar {
@@ -81,56 +92,35 @@ jar {
     }
 }
 
-// jpackage configuration commented out - requires jpackage plugin
-// jpackage {
-//     imageName = 'zoom-transcriber'
-//     skip = false
-//
-//     installerOptions = [
-//         '--linux-package-name', 'zoom-transcriber',
-//         '--linux-deb-maintainer', 'Zoom Transcriber Team',
-//         '--linux-menu-group', 'Office',
-//         '--linux-shortcut'
-//     ]
-//
-//     if (org.gradle.internal.os.OperatingSystem.current().mac) {
-//         installerOptions += [
-//             '--mac-package-name', 'Zoom Transcriber',
-//             '--mac-package-identifier', 'com.zoomtranscriber.zoomtranscriber',
-//             '--mac-bundle-name', 'Zoom Transcriber',
-//             '--mac-bundle-identifier', 'com.zoomtranscriber.zoomtranscriber'
-//         ]
-//     }
-// }
+// Static Analysis Configuration
+spotbugs {
+    toolVersion = '4.7.3'
+    ignoreFailures = false
+    showStackTraces = true
+    showProgress = true
+    effort = 'max'
+    reportLevel = 'low'
+}
 
-// Static Analysis Configuration (commented out for now)
-// spotbugs {
-//     toolVersion = '4.7.3'
-//     ignoreFailures = false
-//     showStackTraces = true
-//     showProgress = true
-//     effort = 'max'
-//     reportLevel = 'low'
-// }
-//
-// // JaCoCo Coverage
-// jacoco {
-//     toolVersion = '0.8.8'
-//     reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
-// }
-//
-// // Checkstyle
-// checkstyle {
-//     toolVersion = '10.12.4'
-//     configFile = file('config/checkstyle/checkstyle.xml')
-//     ignoreFailures = false
-//     showViolations = true
-// }
-//
-// // PMD
-// pmd {
-//     toolVersion = '6.55.0'
-//     ruleSetFiles = files('config/pmd/ruleset.xml')
-//     ignoreFailures = false
-//     consoleOutput = true
-// }
+// JaCoCo Coverage
+jacoco {
+    toolVersion = '0.8.8'
+    reportsDirectory = layout.buildDirectory.dir('reports/jacoco')
+}
+
+// Checkstyle
+checkstyle {
+    toolVersion = '10.12.4'
+    configFile = file('config/checkstyle/checkstyle.xml')
+    ignoreFailures = false
+    showViolations = true
+}
+
+// PMD
+pmd {
+    toolVersion = '6.55.0'
+    ruleSetFiles = files('config/pmd/ruleset.xml')
+    ignoreFailures = false
+    consoleOutput = true
+}
+

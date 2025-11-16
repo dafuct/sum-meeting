@@ -62,6 +62,12 @@ public class MeetingSession {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+        
+        // Calculate duration if start and end times are available
+        if (startTime != null && endTime != null) {
+            var duration = java.time.Duration.between(startTime, endTime);
+            this.duration = duration.toString();
+        }
     }
     
     public UUID getId() {
