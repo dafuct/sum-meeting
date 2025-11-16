@@ -1,0 +1,25 @@
+<div class="login-form">
+  <h2>Login</h2>
+  <p>Sign in to your account</p>
+  
+  <form class="auth-form">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" placeholder="Enter your email">
+    </mat-form-field>
+    
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" placeholder="Enter your password">
+    </mat-form-field>
+    
+    <button mat-raised-button color="primary" class="full-width">
+      Login
+    </button>
+  </form>
+  
+  <div class="auth-links">
+    <a routerLink="/register">Don't have an account? Register</a>
+    <a routerLink="/forgot-password">Forgot password?</a>
+  </div>
+</div>

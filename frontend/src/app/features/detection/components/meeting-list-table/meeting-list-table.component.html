@@ -1,0 +1,109 @@
+<div class="meeting-table-container">
+  <table mat-table [dataSource]="dataSource" matSort (matSortChange)="applySorting($event)">
+    <!-- Title Column -->
+    <ng-container matColumnDef="title">
+      <th mat-header-cell *matHeaderCellDef>Meeting Title</th>
+      <td mat-cell *matCellDef="let meeting">
+        <div class="meeting-title">
+          <strong>{{ meeting.title }}</strong>
+          <small class="meeting-id">{{ getShortMeetingId(meeting.meetingId) }}</small>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Status Column -->
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let meeting">
+        <mat-chip [color]="getStatusColor(meeting.status)" selected>
+          <mat-icon>{{ getStatusIcon(meeting.status) }}</mat-icon>
+          {{ meeting.status }}
+        </mat-chip>
+      </td>
+    </ng-container>
+
+    <!-- Start Time Column -->
+    <ng-container matColumnDef="startTime">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Started</th>
+      <td mat-cell *matCellDef="let meeting">
+        <div class="time-info">
+          <div>{{ formatDate(meeting.startTime) }}</div>
+          <small class="relative-time">{{ getRelativeTime(meeting.startTime) }}</small>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Participants Column -->
+    <ng-container matColumnDef="participantCount">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Participants</th>
+      <td mat-cell *matCellDef="let meeting">
+        <span class="participant-count">
+          <mat-icon>people</mat-icon>
+          {{ getParticipantDisplay(meeting.participantCount) }}
+        </span>
+      </td>
+    </ng-container>
+
+    <!-- Process ID Column -->
+    <ng-container matColumnDef="processId">
+      <th mat-header-cell *matHeaderCellDef>Process ID</th>
+      <td mat-cell *matCellDef="let meeting">
+        <code class="process-id">{{ meeting.processId }}</code>
+      </td>
+    </ng-container>
+
+    <!-- Actions Column -->
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let meeting">
+        <div class="action-buttons">
+          <button mat-icon-button 
+                  [matTooltip]="'View details'"
+                  (click)="showDetails(meeting)">
+            <mat-icon>info</mat-icon>
+          </button>
+          
+          <button mat-icon-button 
+                  [matTooltip]="'Join meeting'"
+                  color="primary"
+                  (click)="joinMeeting(meeting)"
+                  [disabled]="meeting.status !== 'ACTIVE'">
+            <mat-icon>login</mat-icon>
+          </button>
+          
+          <button mat-icon-button 
+                  [matTooltip]="'End meeting'"
+                  color="warn"
+                  (click)="endMeeting(meeting)"
+                  [disabled]="meeting.status !== 'ACTIVE'">
+            <mat-icon>stop</mat-icon>
+          </button>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- Header Row -->
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+
+    <!-- Data Rows -->
+    <tr mat-row 
+        *matRowDef="let row; columns: columns;"
+        [class.selected-row]="isRowSelected(row)"
+        (click)="selectRow(row)">
+    </tr>
+  </table>
+
+  <!-- No Results Message -->
+  <div *ngIf="meetings.length === 0" class="no-results">
+    <mat-icon>meeting_room</mat-icon>
+    <p>No meetings detected</p>
+    <small>Start meeting monitoring to detect Zoom meetings</small>
+  </div>
+
+  <!-- Table Footer -->
+  <div class="table-footer">
+    <small>
+      Showing {{ meetings.length }} meeting{{ meetings.length !== 1 ? 's' : '' }}
+    </small>
+  </div>
+</div>

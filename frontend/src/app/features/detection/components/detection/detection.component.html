@@ -1,0 +1,133 @@
+<div class="detection-container">
+  <mat-card class="detection-card">
+    <mat-card-header>
+      <mat-card-title>Meeting Detection</mat-card-title>
+      <mat-card-subtitle>Monitor and manage Zoom meetings</mat-card-subtitle>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <!-- Connection Status -->
+      <div class="connection-status">
+        <mat-chip [color]="connectionStatusColor" selected>
+          <mat-icon>{{ connectionStatus === 'CONNECTED' ? 'wifi' : 'wifi_off' }}</mat-icon>
+          {{ connectionStatusText }}
+        </mat-chip>
+      </div>
+
+      <!-- Detection Controls -->
+      <app-detection-controls
+        [isMonitoring]="isMonitoring"
+        [isConnected]="connectionStatus === 'CONNECTED'"
+        [meetingCount]="activeMeetingsCount"
+        (startMonitoring)="startMonitoring()"
+        (stopMonitoring)="stopMonitoring()"
+        (refresh)="refreshMeetings()"
+        (scan)="triggerScan()"
+        (export)="exportMeetings()">
+      </app-detection-controls>
+
+      <!-- Statistics -->
+      <div class="statistics">
+        <div class="stat-item">
+          <span class="stat-value">{{ statistics.active }}</span>
+          <span class="stat-label">Active</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ statistics.total }}</span>
+          <span class="stat-label">Total</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">{{ statistics.events }}</span>
+          <span class="stat-label">Events</span>
+        </div>
+      </div>
+
+      <!-- Search and Filter -->
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Meetings</mat-label>
+        <input matInput
+          [(ngModel)]="searchText"
+          placeholder="Search by title, status, or process ID..."
+          autocomplete="off">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- Loading Indicator -->
+      <div *ngIf="isLoading" class="loading-indicator">
+        <mat-spinner diameter="40"></mat-spinner>
+        <span>Loading meetings...</span>
+      </div>
+
+      <!-- Meetings Table -->
+      <app-meeting-list-table
+        *ngIf="!isLoading"
+        [meetings]="filteredMeetings"
+        [selectedMeeting]="selectedMeeting"
+        (meetingSelect)="selectMeeting($event)">
+      </app-meeting-list-table>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Event Log -->
+  <mat-card class="event-log-card" [class.expanded]="detectionForm.get('showEvents')?.value">
+    <mat-card-header>
+      <mat-card-title>Event Log</mat-card-title>
+      <mat-card-subtitle>Real-time detection events</mat-card-subtitle>
+      <button mat-icon-button (click)="clearEventLog()" matTooltip="Clear log">
+        <mat-icon>clear</mat-icon>
+      </button>
+    </mat-card-header>
+    
+    <mat-card-content>
+      <app-event-log
+        [events]="meetingEvents"
+        [maxEvents]="50"
+        [autoScroll]="true">
+      </app-event-log>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Settings Panel -->
+  <mat-card class="settings-card" [class.expanded]="detectionForm.get('showDetails')?.value">
+    <mat-card-header>
+      <mat-card-title>Detection Settings</mat-card-title>
+      <button mat-icon-button (click)="detectionForm.get('showDetails')?.patchValue(!detectionForm.get('showDetails')?.value)">
+        <mat-icon>{{ detectionForm.get('showDetails')?.value ? 'expand_less' : 'expand_more' }}</mat-icon>
+      </button>
+    </mat-card-header>
+    
+    <mat-card-content [formGroup]="detectionForm">
+      <div class="settings-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Scan Interval (ms)</mat-label>
+          <input matInput
+            type="number"
+            formControlName="scanInterval"
+            min="1000"
+            max="60000"
+            step="1000">
+          <mat-hint>How often to check for meetings (1-60 seconds)</mat-hint>
+        </mat-form-field>
+
+        <mat-checkbox formControlName="autoRefresh">
+          Auto-refresh meetings
+        </mat-checkbox>
+
+        <mat-checkbox formControlName="showEvents">
+          Show event log
+        </mat-checkbox>
+
+        <mat-checkbox formControlName="showDetails">
+          Show settings panel
+        </mat-checkbox>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Selected Meeting Details -->
+  <app-meeting-status-card
+    *ngIf="selectedMeeting"
+    [meeting]="selectedMeeting"
+    (close)="selectedMeeting = null">
+  </app-meeting-status-card>
+</div>

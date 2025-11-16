@@ -69,11 +69,47 @@ coverage/
 *.exec
 jacoco/
 
-# Node.js (if any frontend components)
+# Angular / Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
+
+# Angular build output
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+
+# Angular CLI
+frontend/.angular/cache/
+frontend/.angular/workspace.json
+
+# Angular specific
+frontend/.ng_build/
+frontend/.ng-scss-cache/
+
+# TypeScript
+*.tsbuildinfo
+
+# Angular testing coverage
+frontend/coverage/
+
+# Angular e2e
+frontend/e2e/
+
+# Angular environment files (keep examples)
+frontend/src/environments/environment.prod.ts
+frontend/src/environments/environment.local.ts
+
+# Angular lint reports
+frontend/lint-report.html
+
+# Angular Webpack
+frontend/webpack-stats.json
+
+# Angular SSR (if using)
+frontend/dist-server/
 
 # Documentation
 docs/_build/

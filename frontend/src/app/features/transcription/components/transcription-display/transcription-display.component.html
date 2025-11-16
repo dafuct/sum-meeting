@@ -1,0 +1,149 @@
+<div class="transcription-display">
+  <!-- Header Controls -->
+  <div class="transcription-header">
+    <div class="header-left">
+      <h3>Live Transcription</h3>
+      <span class="segment-count">{{ filteredSegments.length }} segments</span>
+    </div>
+    
+    <div class="header-controls">
+      <button mat-icon-button 
+              (click)="copyToClipboard()" 
+              matTooltip="Copy transcription">
+        <mat-icon>content_copy</mat-icon>
+      </button>
+      
+      <button mat-icon-button 
+              (click)="exportTranscription()" 
+              matTooltip="Export transcription">
+        <mat-icon>download</mat-icon>
+      </button>
+      
+      <button mat-icon-button 
+              (click)="scrollToBottom()" 
+              matTooltip="Scroll to bottom">
+        <mat-icon>arrow_downward</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading-indicator">
+    <mat-spinner diameter="30"></mat-spinner>
+    <span>Processing transcription...</span>
+  </div>
+
+  <!-- Transcription Segments -->
+  <div class="transcription-container" #transcriptionContainer>
+    <div *ngFor="let segment of filteredSegments; trackBy: segment.id; let i = index"
+         class="segment"
+         [ngClass]="getSegmentClasses(segment)"
+         (click)="onSegmentClick(segment, $event)"
+         (dblclick)="onSegmentEdit(segment, $event)">
+      
+      <!-- Timestamp -->
+      <div *ngIf="settings.showTimestamps" class="segment-timestamp">
+        {{ getFormattedTimestamp(segment.timestamp) }}
+      </div>
+      
+      <!-- Speaker -->
+      <div *ngIf="settings.showSpeakers && segment.speakerId" 
+           class="segment-speaker"
+           [style.color]="getSpeakerColor(segment.speakerId)">
+        <mat-icon>person</mat-icon>
+        {{ segment.speakerId }}
+      </div>
+      
+      <!-- Text Content -->
+      <div class="segment-text" 
+           [innerHtml]="highlightText(segment.text)">
+      </div>
+      
+      <!-- Metadata -->
+      <div *ngIf="settings.showConfidence || segment.duration" class="segment-metadata">
+        <span *ngIf="settings.showConfidence" 
+              class="confidence"
+              [style.color]="getConfidenceColor(segment.confidence)">
+          {{ getConfidenceDisplay(segment.confidence) }}
+        </span>
+        
+        <span *ngIf="segment.duration" class="duration">
+          {{ getDurationDisplay(segment) }}
+        </span>
+        
+        <span *ngIf="!segment.isFinal" class="interim-indicator">
+          <mat-icon>more_horiz</mat-icon>
+          Interim
+        </span>
+      </div>
+      
+      <!-- Word Count -->
+      <div class="segment-wordcount">
+        {{ getWordCountDisplay(segment) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- No Transcription -->
+  <div *ngIf="segments.length === 0 && !isLoading" class="no-transcription">
+    <mat-icon>mic_off</mat-icon>
+    <h4>No transcription available</h4>
+    <p>Start a meeting session to begin real-time transcription</p>
+  </div>
+
+  <!-- Search Results Info -->
+  <div *ngIf="searchText && filteredSegments.length === 0" class="no-search-results">
+    <mat-icon>search_off</mat-icon>
+    <h4>No matches found</h4>
+    <p>Try adjusting your search terms</p>
+  </div>
+
+  <!-- Statistics Panel -->
+  <div class="statistics-panel" *ngIf="segments.length > 0">
+    <h4>Transcription Statistics</h4>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-value">{{ statistics.totalSegments }}</span>
+        <span class="stat-label">Segments</span>
+      </div>
+      
+      <div class="stat-item">
+        <span class="stat-value">{{ statistics.finalSegments }}</span>
+        <span class="stat-label">Final</span>
+      </div>
+      
+      <div class="stat-item">
+        <span class="stat-value">{{ statistics.totalWords }}</span>
+        <span class="stat-label">Words</span>
+      </div>
+      
+      <div class="stat-item">
+        <span class="stat-value">{{ getDurationDisplay(statistics) }}</span>
+        <span class="stat-label">Duration</span>
+      </div>
+      
+      <div class="stat-item">
+        <span class="stat-value">{{ Math.round(statistics.averageConfidence * 100) }}%</span>
+        <span class="stat-label">Avg Confidence</span>
+      </div>
+      
+      <div class="stat-item">
+        <span class="stat-value">{{ statistics.speakers.size }}</span>
+        <span class="stat-label">Speakers</span>
+      </div>
+    </div>
+    
+    <!-- Speaker Legend -->
+    <div class="speaker-legend" *ngIf="statistics.speakers.size > 0">
+      <h5>Speaker Colors</h5>
+      <div class="speaker-list">
+        <div *ngFor="let speaker of statistics.speakers" 
+             class="speaker-item"
+             [style.color]="getSpeakerColor(speaker)">
+          <mat-icon>person</mat-icon>
+          {{ speaker }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
