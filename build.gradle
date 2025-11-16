@@ -48,6 +48,10 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.33'
     runtimeOnly 'com.h2database:h2'
 
+    // Redis for caching and data storage
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+
     // JSON Processing
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
@@ -61,6 +65,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.mockito:mockito-core'
     testImplementation 'com.h2database:h2'
+    testImplementation 'io.projectreactor:reactor-test'
 
     // JNA for native library access
     implementation 'net.java.dev.jna:jna:5.13.0'

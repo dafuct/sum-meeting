@@ -34,6 +34,16 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
 
+  # Redis configuration for development (optional)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+
+  # Spring Session Configuration
+  # Note: This application uses stateless JWT authentication, so Spring Session is not required
+
 ---
 # Production Profile
 spring:
@@ -57,25 +67,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
 
-  redis:
-    host: redis-cluster
-    port: 6379
-    password: ${REDIS_PASSWORD}
-
-  session:
-    store-type: redis
-
-# Production AI service configuration
-zoom:
-  transcriber:
-    ai-service:
-      instances:
-        - url: http://ollama-1:11434
-          weight: 1
-        - url: http://ollama-2:11434
-          weight: 1
-        - url: http://ollama-3:11434
-          weight: 1
+  data:
+    redis:
+      host: redis-cluster
+      port: 6379
+      password: ${REDIS_PASSWORD}
 
 ---
 # Common Configuration (applies to all profiles)
@@ -112,10 +108,6 @@ management:
     loggers:
       enabled: true
   metrics:
-    export:
-      prometheus:
-        enabled: true
-        step: 60s
     distribution:
       percentiles-histogram:
         http.server.requests: true
@@ -124,6 +116,10 @@ management:
     tags:
       application: ${spring.application.name}
       instance: ${HOSTNAME:${spring.application.name}-${random.uuid}}
+  prometheus:
+    metrics:
+      export:
+        enabled: true
   info:
     env:
       enabled: true
@@ -136,10 +132,6 @@ management:
 logging:
   level:
     com.zoomtranscriber: INFO
-    com.zoomtranscriber.performance: DEBUG
-    com.zoomtranscriber.monitoring: DEBUG
-    com.zoomtranscriber.structured: INFO
-    com.zoomtranscriber.metrics: INFO
     org.springframework.web: INFO
     org.springframework.web.reactive: INFO
     reactor.netty: INFO
@@ -149,124 +141,9 @@ logging:
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{correlationId:-}] %logger{36} - %msg%n"
   file:
     name: logs/zoom-transcriber.log
-    max-size: 100MB
-    max-history: 30
   logback:
     rollingpolicy:
       max-file-size: 100MB
+      max-history: 30
       total-size-cap: 10GB
       
-# Zoom Transcriber Specific Configuration
-zoom:
-  transcriber:
-    monitoring:
-      enabled: true
-      metrics-export-interval: 60s
-      health-check-interval: 30s
-      performance-tracking: true
-      error-tracking: true
-    audio:
-      sample-rate: 44100
-      bit-depth: 16
-      channels: 2
-      buffer-size: 4096
-    transcription:
-      model: whisper-1
-      language: en-US
-      confidence-threshold: 0.7
-      enable-punctuation: true
-      enable-capitalization: true
-    ai-service:
-      provider: ollama
-      timeout: 30s
-      retry-attempts: 3
-      retry-delay: 1s
-      
-# Performance Monitoring Configuration
-performance:
-  monitoring:
-    enabled: true
-    collection-interval: 10s
-    export-interval: 60s
-    thresholds:
-      cpu-warning: 70.0
-      cpu-critical: 85.0
-      memory-warning: 75.0
-      memory-critical: 90.0
-      error-rate-warning: 0.05
-      error-rate-critical: 0.10
-      
-# Health Check Configuration
-health:
-  check:
-    audio-service:
-      enabled: true
-      timeout: 5s
-      interval: 30s
-    transcription-service:
-      enabled: true
-      timeout: 10s
-      interval: 30s
-    ai-service:
-      enabled: true
-      timeout: 15s
-      interval: 30s
-    system-resources:
-      enabled: true
-      interval: 10s
-      
-# Error Tracking Configuration
-error:
-  tracking:
-    enabled: true
-    cleanup-interval: 1h
-    retention-period: 24h
-    alerting:
-      enabled: true
-      error-threshold-per-minute: 10
-      critical-error-threshold-per-hour: 5
-      error-rate-warning-threshold: 0.05
-      error-rate-critical-threshold: 0.10
-      
-# Log Configuration for Structured Logging
-structured:
-  logging:
-    enabled: true
-    json-format: true
-    include-stack-trace: true
-    include-mdc: true
-    correlation-id-header: X-Correlation-ID
-    
-# Metrics Collection Configuration
-metrics:
-  collection:
-    enabled: true
-    interval: 10s
-    export:
-      prometheus:
-        enabled: true
-        endpoint: /actuator/prometheus
-      jvm:
-        enabled: true
-      system:
-        enabled: true
-      custom:
-        enabled: true
-        
-# Thread Pool Configuration
-thread-pool:
-  async:
-    core-size: 4
-    max-size: 16
-    queue-capacity: 100
-    thread-name-prefix: zoom-async-
-  health-check:
-    core-size: 2
-    max-size: 8
-    queue-capacity: 50
-    thread-name-prefix: zoom-health-
-  metrics:
-    core-size: 2
-    max-size: 8
-    queue-capacity: 50
-    thread-name-prefix: zoom-metrics-

@@ -204,35 +204,8 @@ public class AudioConfig {
         return config;
     }
     
-    /**
-     * Creates executor for audio capture operations.
-     */
-    @Bean(name = "audioCaptureExecutor")
-    public Executor audioCaptureExecutor() {
-        return Executors.newFixedThreadPool(captureThreadPoolSize);
-    }
-    
-    /**
-     * Creates executor for audio processing operations.
-     */
-    @Bean(name = "audioConfigProcessingExecutor")
-    public Executor audioConfigProcessingExecutor() {
-        return Executors.newFixedThreadPool(processingThreadPoolSize);
-    }
-    
-    /**
-     * Creates scheduler for audio reactive operations.
-     */
-    @Bean(name = "audioScheduler")
-    public reactor.core.scheduler.Scheduler audioScheduler() {
-        return Schedulers.newBoundedElastic(
-            captureThreadPoolSize + processingThreadPoolSize,
-            (captureThreadPoolSize + processingThreadPoolSize) * 2,
-            "audio-scheduler",
-            60,
-            true
-        );
-    }
+    // Note: Audio executors have been moved to AdaptiveThreadPoolConfiguration.java
+    // Use audioProcessingExecutor and transcriptionExecutor from that configuration
     
     /**
      * Gets platform-specific configuration for current platform.
