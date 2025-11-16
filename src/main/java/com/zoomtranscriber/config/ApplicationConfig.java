@@ -41,16 +41,6 @@ public class ApplicationConfig {
         return Executors.newFixedThreadPool(10);
     }
     
-    @Bean(name = "audioProcessingExecutor")
-    public Executor audioProcessingExecutor() {
-        return Executors.newFixedThreadPool(4);
-    }
-    
-    @Bean(name = "transcriptionExecutor")
-    public Executor transcriptionExecutor() {
-        return Executors.newFixedThreadPool(2);
-    }
-    
     public String getOllamaUrl() {
         return ollamaUrl;
     }

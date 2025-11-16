@@ -12,7 +12,7 @@ public class Configuration {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "config_key", nullable = false, unique = true, length = 100)
     private String key;
     
     @Column(nullable = false, length = 1000)

@@ -3,10 +3,19 @@ server:
   port: 8080
   servlet:
     context-path: /
-    
+
 spring:
   application:
     name: zoom-transcriber
+  profiles:
+    active: dev
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
 
   # Database configuration for development
   datasource:
@@ -25,6 +34,52 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
 
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://mysql-cluster-writer:3306/zoom_transcriber?useSSL=true&requireSSL=true
+    username: ${DB_USERNAME:zoom_user}
+    password: ${DB_PASSWORD:zoom_pass}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+  redis:
+    host: redis-cluster
+    port: 6379
+    password: ${REDIS_PASSWORD}
+
+  session:
+    store-type: redis
+
+# Production AI service configuration
+zoom:
+  transcriber:
+    ai-service:
+      instances:
+        - url: http://ollama-1:11434
+          weight: 1
+        - url: http://ollama-2:11434
+          weight: 1
+        - url: http://ollama-3:11434
+          weight: 1
+
+---
+# Common Configuration (applies to all profiles)
+spring:
   # Jackson configuration
   jackson:
     serialization:

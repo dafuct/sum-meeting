@@ -154,9 +154,9 @@ public class AudioConfig {
     
     /**
      * Creates audio capture service configuration.
+     * This is a factory method, not a Spring bean.
      */
-    @Bean(name = "audioCaptureConfig")
-    public AudioCaptureService.CaptureConfig audioCaptureConfig() {
+    public AudioCaptureService.CaptureConfig createAudioCaptureConfig() {
         AudioCaptureService.AudioQuality quality = new AudioCaptureService.AudioQuality(
             defaultQuality.getSampleRate(),
             defaultQuality.getBitDepth(),
@@ -165,10 +165,10 @@ public class AudioConfig {
             false,
             calculateBufferSizeBytes()
         );
-        
+
         PlatformAudioConfig platformConfig = getCurrentPlatformConfig();
         String sourceId = platformConfig.getPreferredDevice().equals("default") ? null : platformConfig.getPreferredDevice();
-        
+
         return new AudioCaptureService.CaptureConfig(
             sourceId, // Use platform-specific device or auto-detect
             quality,
