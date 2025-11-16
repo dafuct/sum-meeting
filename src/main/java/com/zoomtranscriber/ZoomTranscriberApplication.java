@@ -15,19 +15,6 @@ import com.zoomtranscriber.config.ApplicationConfig;
 public class ZoomTranscriberApplication {
 
     public static void main(String[] args) {
-        var app = new SpringApplication(ZoomTranscriberApplication.class);
-
-        app.setDefaultProperties(java.util.Map.of(
-            "spring.application.name", "zoom-transcriber",
-            "server.port", "8080",
-            "management.endpoints.web.exposure.include", "health,info,metrics",
-            "management.endpoint.health.show-details", "when-authorized",
-            "logging.level.com.zoomtranscriber", "INFO",
-            "logging.level.org.springframework.web", "DEBUG",
-            "logging.level.org.hibernate.SQL", "DEBUG",
-            "logging.level.org.hibernate.type.descriptor.sql.BasicBinder", "TRACE"
-        ));
-
-        app.run(args);
+        new SpringApplication(ZoomTranscriberApplication.class).run(args);
     }
 }
