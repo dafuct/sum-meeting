@@ -1,4 +1,4 @@
-# Zoom Meeting Transcriber - Web Application
+# Zoom Meeting Transcriber
 
 A modern web application that automatically detects Zoom meetings, transcribes audio in real-time, and generates AI-powered summaries. Built with Angular frontend and Spring Boot backend.
 
@@ -15,7 +15,7 @@ A modern web application that automatically detects Zoom meetings, transcribes a
 ### Technical Stack
 - **Frontend**: Angular 17 with Angular Material, TypeScript, RxJS, NgRx for state management
 - **Backend**: Spring Boot 3.2.0 with Spring Web, Spring WebFlux, Spring Security
-- **Database**: MySQL for production, H2 for development/testing
+- **Database**: MySQL for production
 - **Real-time Communication**: WebSocket support with Spring's WebSocket module
 - **AI Processing**: Ollama with qwen2.5:0.5b model for AI processing
 - **Authentication**: JWT-based authentication and authorization
@@ -26,324 +26,336 @@ A modern web application that automatically detects Zoom meetings, transcribes a
 
 ### System Requirements
 - **Operating System**: Windows 10+, macOS 10.15+, or Ubuntu 20.04+
-- **Java**: Java 21 Runtime (for backend)
-- **Node.js**: Node.js 18+ and npm 9+ (for frontend development)
+- **Docker**: Docker and Docker Compose installed
 - **Memory**: Minimum 4GB RAM, 8GB recommended
 - **Storage**: 2GB free space for application and models
 - **Network**: Internet connection for initial model download and real-time communication
 
-### Development Prerequisites
+### Platform-Specific Requirements
+- **macOS**: Ollama installed locally (`brew install ollama`)
+- **Linux/Windows**: Ollama provided by Docker container
+
+## 🎯 Quick Start with Docker
+
+### Prerequisites
 ```bash
-# Verify Java installation
-java -version
+# Verify Docker installation
+docker --version
+docker-compose --version
 
-# Verify Node.js installation
-node --version
-npm --version
-
-# Optional: Verify MySQL installation
-mysql --version
+# For macOS: Install Ollama locally
+brew install ollama
+ollama pull qwen2.5:0.5b
+ollama serve
 ```
 
-## 🎯 Quick Start
+### Production Environment
 
-### Option 1: Development Setup (Recommended)
-
-1. **Clone the Repository**:
+#### macOS (using local Ollama)
 ```bash
-git clone https://github.com/your-org/zoom-transcriber.git
-cd zoom-transcriber
+# Set environment for macOS
+export OLLAMA_URL=http://host.docker.internal:11434
+
+# Start production stack
+docker-compose up --build -d
 ```
 
-2. **Backend Setup**:
+#### Linux/Windows (using Docker Ollama)
 ```bash
-# Navigate to project root
-cd zoom-transcriber
+# Start full production stack (includes Ollama container)
+docker-compose up --build -d
 
-# Build and run backend
-./gradlew bootRun
+# Download model in container
+docker-compose exec ollama ollama pull qwen2.5:0.5b
 ```
-The backend will start on `http://localhost:8080`
 
-3. **Frontend Setup**:
+### Environment Variables
+
+Create a `.env` file to customize settings:
+
 ```bash
-# Navigate to frontend directory
-cd frontend
+# Copy template
+cp .env .env.local
 
-# Install dependencies
-npm install
-
-# Start development server
-npm start
+# Edit for your environment
+OLLAMA_URL=http://host.docker.internal:11434  # for macOS
 ```
-The frontend will start on `http://localhost:4200`
 
-4. **Access the Application**:
-Open your browser and navigate to `http://localhost:4200`
+## 🌐 Services Overview
 
-### Option 2: Production Deployment
+| Service | Port | Description |
+|----------|-------|-------------|
+| Frontend | 4200 | Angular Web App |
+| Backend | 8080 | Spring Boot API |
+| MySQL | 3306 | Production Database |
+| Redis | 6379 | Cache & Session Store |
+| Ollama | 11434 | AI Model Service |
+| Prometheus | 9090 | Metrics Collection |
+| Grafana | 3000 | Monitoring Dashboard |
 
-See the [Deployment Section](#-deployment) for production deployment instructions.
+## 🔗 Access Points
 
-## 📖 User Interface
+After starting services:
 
-### Web Application Features
-- **Dashboard**: Overview of active meetings, recent transcriptions, and system status
-- **Meeting Detection**: Automatic detection of Zoom meetings with real-time status updates
-- **Live Transcription**: Real-time transcription display with speaker identification and confidence scores
-- **Summary Generation**: AI-powered summaries with customizable focus areas
-- **Configuration Management**: Web-based settings for audio, transcription, AI models, and privacy
-- **User Authentication**: Secure login system with JWT tokens
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **Frontend**: http://localhost:4200
+- **Backend API**: http://localhost:8080
+- **Health Check**: http://localhost:8080/actuator/health
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
 
-### Key Web Features
-- **Real-time Updates**: WebSocket-based live updates without page refresh
-- **Progressive Web App**: Offline capabilities and app-like experience
-- **Dark/Light Theme**: Customizable interface themes
-- **Export Options**: Save transcriptions and summaries in various formats (TXT, PDF, JSON)
-- **Search & Filter**: Find past meetings and transcriptions quickly
-- **Collaboration**: Share summaries and transcriptions with team members
+## 📊 Architecture
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Frontend  │    │   Backend   │    │   MySQL    │
+│   (Angular) │◄──►│ (Spring Boot)│◄──►│             │
+│   :4200      │    │   :8080     │    │   :3306     │
+└─────────────┘    └─────────────┘    └─────────────┘
+                          │                   │
+                          ▼                   ▼
+                   ┌─────────────┐    ┌─────────────┐
+                   │    Redis    │    │   Ollama    │
+                   │   :6379     │    │   :11434    │
+                   └─────────────┘    └─────────────┘
+                          │                   │
+                          ▼                   ▼
+                   ┌─────────────┐    ┌─────────────┐
+                   │ Prometheus  │    │   Grafana   │
+                   │   :9090     │    │   :3000     │
+                   └─────────────┘    └─────────────┘
+```
 
 ## 🔧 Configuration
 
-### Backend Configuration
-Configuration is managed through `application.yml` and environment variables:
+### Environment Variables
+- `OLLAMA_URL`: Ollama service URL (auto-detects platform)
+- `DB_USERNAME`: Database user (default: `zoom_user`)
+- `DB_PASSWORD`: Database password (default: `zoom_pass`)
+- `API_URL`: Backend API URL for frontend
+
+### Application Configuration
+Configuration is managed through `src/main/resources/application.yml`:
 
 ```yaml
-# application.yml
 server:
   port: 8080
 
 spring:
+  application:
+    name: zoom-transcriber
+  profiles:
+    active: prod
+
   datasource:
-    url: jdbc:mysql://localhost:3306/zoom_transcriber
+    url: jdbc:mysql://mysql:3306/zoom_transcriber?useSSL=true&requireSSL=true
     username: ${DB_USERNAME:zoom_user}
     password: ${DB_PASSWORD:zoom_pass}
-  
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
 
-  security:
-    jwt:
-      secret: ${JWT_SECRET:your-secret-key}
-      expiration: 86400000
+  data:
+    redis:
+      host: redis
+      port: 6379
 
-ollama:
-  base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
-  model: qwen2.5:0.5b
+zoom:
+  transcriber:
+    ollama:
+      host: localhost
+      port: 11434
+      default-model: qwen2.5:0.5b
 ```
 
-### Frontend Configuration
-Environment-specific configuration in `frontend/src/environments/`:
+## 📝 Data Persistence
 
-```typescript
-// environment.ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:8080/api',
-  wsUrl: 'ws://localhost:8080/ws',
-  enableDebug: true
-};
+- **MySQL**: Stored in `mysql_data` volume
+- **Redis**: Stored in `redis_data` volume
+- **Ollama**: Stored in `ollama_data` volume
+- **Prometheus**: Stored in `prometheus_data` volume
+- **Grafana**: Stored in `grafana_data` volume
+- **Logs**: Mounted to `./logs` directory
 
-// environment.prod.ts
-export const environment = {
-  production: true,
-  apiUrl: '/api',
-  wsUrl: '/ws',
-  enableDebug: false
-};
-```
+## 🔍 Monitoring
 
-### Audio Settings
-- **Input Device**: Choose microphone or audio input source (browser permissions required)
-- **Quality Settings**: Adjust audio quality for optimal transcription accuracy
-- **Noise Reduction**: Browser-based noise filtering for clearer audio
+### Prometheus Metrics
+- Application metrics: http://localhost:9090/targets
+- Custom metrics: http://localhost:8080/actuator/prometheus
 
-### Transcription Settings
-- **Language**: Auto-detect or manually select transcription language
-- **Confidence Threshold**: Adjust minimum confidence score for transcription display
-- **Real-time Display**: Configure live transcription updates frequency
+### Grafana Dashboards
+- Login: admin/admin
+- Pre-configured dashboards for application monitoring
+- Real-time performance metrics and health status
 
-### AI Settings
-- **Model Selection**: Choose available AI models (qwen2.5:0.5b, llama3, etc.)
-- **Summary Types**: Configure types of summaries to generate
-- **Processing Options**: Adjust AI processing parameters
+## 🛠️ Management Commands
 
-## 📊 Architecture
-
-### Modern Web Architecture
-- **Frontend**: Single Page Application (SPA) with Angular 17
-- **Backend**: RESTful API with Spring Boot 3.2.0
-- **Real-time Communication**: WebSocket connections for live updates
-- **State Management**: NgRx for client-side state management
-- **Database Layer**: JPA entities with Spring Data for database operations
-- **Security**: JWT-based authentication with Spring Security
-- **Monitoring**: Comprehensive health checks and metrics collection
-
-### System Architecture Flow
-1. **Frontend (Angular)**: User interface and client-side state management
-2. **API Gateway**: Spring Boot REST endpoints for HTTP requests
-3. **WebSocket Layer**: Real-time communication for live transcription
-4. **Business Logic**: Spring services for core functionality
-5. **Data Layer**: JPA repositories and MySQL database
-6. **External Services**: Ollama for AI processing, system APIs for meeting detection
-
-### Technology Integration
-```
-┌─────────────────┐    HTTP/WebSocket    ┌──────────────────┐
-│   Angular SPA   │ ◄──────────────────► │  Spring Boot     │
-│   (Port 4200)   │                      │  (Port 8080)     │
-└─────────────────┘                      └──────────────────┘
-         │                                        │
-         │                                        ▼
-         │                              ┌──────────────────┐
-         │                              │   MySQL DB       │
-         │                              │   (Port 3306)    │
-         │                              └──────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│   User Browser  │
-│   (Any Device)  │
-└─────────────────┘
-```
-
-## 🔒 Development
-
-### Backend Development
+### Docker Compose Operations
 ```bash
-# Prerequisites
-Java 21+
-Gradle 8.5+
-MySQL 8.0+
+# Start all services
+docker-compose up --build -d
 
-# Clone and build
-git clone <repository-url>
-cd zoom-transcriber
+# View logs
+docker-compose logs -f backend
+docker-compose logs -f frontend
 
-# Run tests
-./gradlew test
+# Check service status
+docker-compose ps
 
-# Build application
-./gradlew build
+# Stop services
+docker-compose down
 
-# Run in development mode
-./gradlew bootRun
+# Stop with volume cleanup
+docker-compose down -v
 
-# Run with specific profile
-./gradlew bootRun --args='--spring.profiles.active=dev'
+# Rebuild specific service
+docker-compose up --build -d backend
+
+# Scale services
+docker-compose up --scale backend=2
 ```
 
-### Frontend Development
+### Service-Specific Commands
 ```bash
-# Navigate to frontend directory
-cd frontend
+# Access backend container
+docker-compose exec backend bash
 
-# Install dependencies
-npm install
+# Access MySQL database
+docker-compose exec mysql mysql -u zoom_user -p zoom_transcriber
 
-# Run development server
-npm start
+# Manage Ollama models
+docker-compose exec ollama ollama list
+docker-compose exec ollama ollama pull qwen2.5:0.5b
 
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:ci
-
-# Build for production
-npm run build:prod
-
-# Analyze bundle size
-npm run analyze
-
-# Lint code
-npm run lint
+# View application logs
+docker-compose exec backend tail -f /app/logs/zoom-transcriber.log
 ```
 
-### Project Structure
-```
-zoom-transcriber/
-├── frontend/                          # Angular frontend
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── core/                  # Core services and utilities
-│   │   │   ├── features/              # Feature modules
-│   │   │   │   ├── dashboard/         # Dashboard component
-│   │   │   │   ├── detection/         # Meeting detection
-│   │   │   │   ├── authentication/    # User authentication
-│   │   │   │   └── transcription/     # Transcription interface
-│   │   │   ├── shared/                # Shared components and modules
-│   │   │   └── store/                 # NgRx store setup
-│   │   ├── assets/                    # Static assets
-│   │   └── environments/              # Environment configurations
-│   ├── package.json                   # Frontend dependencies
-│   ├── angular.json                   # Angular CLI configuration
-│   └── tsconfig.json                  # TypeScript configuration
-├── src/main/java/com/zoomtranscriber/ # Spring Boot backend
-│   ├── api/                          # REST controllers
-│   │   ├── AuthenticationController.java
-│   │   ├── MeetingController.java
-│   │   ├── TranscriptionController.java
-│   │   └── SummaryController.java
-│   ├── config/                       # Configuration classes
-│   │   ├── SecurityConfiguration.java
-│   │   ├── WebSocketConfiguration.java
-│   │   └── DatabaseConfig.java
-│   ├── core/                         # Business logic
-│   │   ├── audio/                    # Audio capture and processing
-│   │   ├── transcription/            # Speech recognition
-│   │   ├── detection/               # Meeting detection
-│   │   ├── ai/                      # AI services
-│   │   └── storage/                 # JPA entities
-│   ├── security/                     # JWT authentication
-│   └── websocket/                    # WebSocket handlers
-├── build.gradle                      # Backend build configuration
-└── README.md                         # This file
-```
+## 🔒 Security
 
-## 🧪 Testing
+### Authentication & Authorization
+- **JWT Tokens**: Stateless authentication with refresh tokens
+- **Role-based Access Control**: User roles and permissions
+- **Password Security**: BCrypt encryption for password storage
+- **CORS Configuration**: Proper cross-origin resource sharing setup
 
-### Backend Testing
+### Data Protection
+- **Encryption**: Data encrypted in transit (HTTPS/WSS) and at rest
+- **Input Validation**: Comprehensive input sanitization and validation
+- **SQL Injection Prevention**: Parameterized queries and ORM usage
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### Services Won't Start
 ```bash
-# Run all tests
-./gradlew test
+# Check Docker Compose configuration
+docker-compose config
 
-# Run integration tests
-./gradlew integrationTest
+# View service logs
+docker-compose logs
 
-# Run with coverage report
-./gradlew test jacocoTestReport
-
-# Run specific test class
-./gradlew test --tests "*MeetingControllerTest"
+# Check port conflicts
+netstat -tulpn | grep :8080
 ```
 
-### Frontend Testing
+#### Backend Connection Issues
 ```bash
-# Navigate to frontend directory
-cd frontend
+# Check backend health
+curl http://localhost:8080/actuator/health
 
-# Run unit tests
-npm test
+# Verify database connection
+docker-compose exec mysql mysql -u zoom_user -p zoom_transcriber
 
-# Run tests in CI mode (headless)
-npm run test:ci
-
-# Run end-to-end tests
-npm run e2e
-
-# Generate coverage report
-npm run test:ci -- --code-coverage
+# Check Redis connection
+docker-compose exec redis redis-cli ping
 ```
 
-### Test Coverage Targets
-- **Backend**: >85% code coverage with JaCoCo
-- **Frontend**: >80% code coverage with Istanbul
-- **Integration Tests**: Complete workflow coverage
-- **E2E Tests**: Critical user journey coverage
+#### Ollama Connection Issues
+```bash
+# Check Ollama status (Linux/Windows)
+docker-compose exec ollama ollama list
+
+# For macOS, check local installation
+ollama list
+curl http://localhost:11434/api/tags
+```
+
+#### Frontend Build Issues
+```bash
+# Rebuild frontend
+docker-compose build --no-cache frontend
+
+# Clear Docker cache
+docker system prune -f
+```
+
+### Performance Issues
+
+#### High Memory Usage
+```bash
+# Monitor resource usage
+docker stats
+
+# Adjust JVM memory limits
+docker-compose up -d --memory=2g backend
+```
+
+#### Slow Database Queries
+```bash
+# Enable slow query log
+docker-compose exec mysql mysql -e "SET GLOBAL slow_query_log = 'ON';"
+
+# Check database performance
+docker-compose exec mysql mysql -e "SHOW PROCESSLIST;"
+```
+
+## 🚀 Production Deployment
+
+### Environment Setup
+1. **Update environment variables** in `.env` file
+2. **Set strong passwords** for MySQL and Grafana
+3. **Configure SSL** certificates
+4. **Set up backup** strategies for volumes
+5. **Monitor resource usage** and adjust limits
+
+### Security Hardening
+```bash
+# Use production secrets
+echo "DB_PASSWORD=your-secure-password" >> .env.local
+echo "GF_SECURITY_ADMIN_PASSWORD=your-secure-admin-password" >> .env.local
+
+# Enable HTTPS (configure reverse proxy)
+# Example with nginx or traefik
+```
+
+### Backup Strategies
+```bash
+# Backup volumes
+docker run --rm -v mysql_data:/data -v $(pwd):/backup alpine tar czf /backup/mysql-backup.tar.gz -C /data .
+
+# Automated backup script
+#!/bin/bash
+DATE=$(date +%Y%m%d_%H%M%S)
+docker run --rm -v mysql_data:/data -v /backups:/backup alpine tar czf /backup/mysql-$DATE.tar.gz -C /data .
+```
+
+## 📈 Scaling
+
+### Horizontal Scaling
+```bash
+# Scale backend services
+docker-compose up --scale backend=3
+
+# Load balancing with nginx
+# Configure nginx upstream block
+```
+
+### Resource Optimization
+```bash
+# Limit resource usage
+docker-compose up -d --memory=1g --cpus=0.5 backend
+
+# Monitor performance
+docker-compose exec backend curl http://localhost:8080/actuator/metrics
+```
 
 ## 📚 API Documentation
 
@@ -365,291 +377,46 @@ DELETE /api/meetings/{id}        # Delete meeting
 GET    /api/meetings/active      # Get active meeting
 ```
 
-### Transcription Endpoints
-```http
-GET    /api/transcriptions       # List transcriptions
-GET    /api/transcriptions/{id}  # Get transcription by ID
-POST   /api/transcriptions/start # Start transcription
-POST   /api/transcriptions/stop  # Stop transcription
-```
-
-### Summary Endpoints
-```http
-GET    /api/summaries            # List summaries
-POST   /api/summaries            # Generate summary
-GET    /api/summaries/{id}       # Get summary by ID
-PUT    /api/summaries/{id}       # Update summary
-```
-
 ### Health and Monitoring
 ```http
-GET    /api/health               # Application health
+GET    /actuator/health               # Application health
 GET    /actuator/metrics         # Application metrics
 GET    /actuator/info           # Application info
+GET    /actuator/prometheus       # Prometheus metrics
 ```
-
-### WebSocket Endpoints
-```javascript
-// Connect to WebSocket
-const ws = new WebSocket('ws://localhost:8080/ws/transcription');
-
-// Receive real-time transcription
-ws.onmessage = function(event) {
-  const data = JSON.parse(event.data);
-  console.log('Transcription:', data);
-};
-```
-
-## 🔐 Security & Privacy
-
-### Authentication & Authorization
-- **JWT Tokens**: Stateless authentication with refresh tokens
-- **Role-based Access Control**: User roles and permissions
-- **Password Security**: BCrypt encryption for password storage
-- **Session Management**: Secure session handling and timeout
-
-### Data Protection
-- **Encryption**: Data encrypted in transit (HTTPS/WSS) and at rest
-- **CORS Configuration**: Proper cross-origin resource sharing setup
-- **Input Validation**: Comprehensive input sanitization and validation
-- **SQL Injection Prevention**: Parameterized queries and ORM usage
-
-### Privacy Features
-- **Local Processing Options**: Configure AI processing location
-- **Data Retention Policies**: Automatic cleanup of old meeting data
-- **User Consent**: Granular privacy controls and user consent management
-- **Audit Logging**: Comprehensive logging for security and compliance
-
-## 🚀 Deployment
-
-### Development Deployment
-```bash
-# Start backend
-./gradlew bootRun
-
-# Start frontend (in separate terminal)
-cd frontend && npm start
-```
-
-### Production Deployment
-
-#### Option 1: Docker Deployment
-```dockerfile
-# Dockerfile (Backend)
-FROM openjdk:21-jdk-slim
-COPY build/libs/*.jar app.jar
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
-
-# Dockerfile (Frontend)
-FROM node:18-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build:prod
-
-FROM nginx:alpine
-COPY --from=build /app/dist/zoom-transcriber-web /usr/share/nginx/html
-EXPOSE 80
-```
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-services:
-  backend:
-    build: .
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_URL=jdbc:mysql://mysql:3306/zoom_transcriber
-      - DB_USERNAME=zoom_user
-      - DB_PASSWORD=zoom_pass
-    depends_on:
-      - mysql
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-
-  mysql:
-    image: mysql:8.0
-    environment:
-      - MYSQL_DATABASE=zoom_transcriber
-      - MYSQL_USER=zoom_user
-      - MYSQL_PASSWORD=zoom_pass
-      - MYSQL_ROOT_PASSWORD=root_password
-    volumes:
-      - mysql_data:/var/lib/mysql
-
-volumes:
-  mysql_data:
-```
-
-#### Option 2: Cloud Deployment
-```bash
-# Build frontend for production
-cd frontend
-npm run build:prod
-
-# Build backend JAR
-cd ..
-./gradlew build
-
-# Deploy to cloud platform (AWS, GCP, Azure)
-# Example for AWS Elastic Beanstalk:
-eb create zoom-transcriber-prod
-```
-
-### Environment Variables
-```bash
-# Required for production
-export DB_URL=jdbc:mysql://your-db-host:3306/zoom_transcriber
-export DB_USERNAME=your_db_user
-export DB_PASSWORD=your_db_password
-export JWT_SECRET=your_jwt_secret_key
-export OLLAMA_BASE_URL=http://your-ollama-host:11434
-```
-
-### Monitoring & Logging
-- **Application Logs**: Structured logging with Logback
-- **Metrics**: Prometheus metrics via Micrometer
-- **Health Checks**: Spring Boot Actuator endpoints
-- **Error Tracking**: Centralized error collection
-- **Performance Monitoring**: APM integration support
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-#### Backend Issues
-**Problem**: Backend fails to start on port 8080
-```bash
-# Check if port is in use
-lsof -i :8080
-
-# Kill process using port 8080
-kill -9 <PID>
-
-# Or use different port
-./gradlew bootRun --args='--server.port=8081'
-```
-
-**Problem**: Database connection issues
-```bash
-# Check MySQL status
-systemctl status mysql
-
-# Verify database exists
-mysql -u root -p -e "SHOW DATABASES;"
-
-# Check connection
-./gradlew bootRun --args='--spring.datasource.url=jdbc:mysql://localhost:3306/zoom_transcriber'
-```
-
-**Problem**: Ollama service not available
-```bash
-# Check Ollama status
-ollama list
-
-# Start Ollama service
-ollama serve
-
-# Pull required model
-ollama pull qwen2.5:0.5b
-```
-
-#### Frontend Issues
-**Problem**: Frontend cannot connect to backend
-```bash
-# Check CORS configuration
-# Verify proxy configuration in angular.json
-
-# Temporarily disable CORS in development
-# Add to application.yml:
-# spring:
-#   web:
-#     cors:
-#       allowed-origins: "*"
-```
-
-**Problem**: WebSocket connection issues
-```bash
-# Check WebSocket endpoint
-curl -i -N -H "Connection: Upgrade" \
-     -H "Upgrade: websocket" \
-     -H "Sec-WebSocket-Key: test" \
-     -H "Sec-WebSocket-Version: 13" \
-     http://localhost:8080/ws/transcription
-```
-
-**Problem**: Browser microphone permissions
-- Ensure HTTPS in production (microphone requires secure context)
-- Check browser settings for microphone permissions
-- Test microphone on https://webcammictest.com/
-
-### Performance Issues
-**Problem**: Slow transcription response
-```bash
-# Check system resources
-top
-htop
-
-# Monitor application metrics
-curl http://localhost:8080/actuator/metrics
-
-# Check database performance
-mysql -u root -p -e "SHOW PROCESSLIST;"
-```
-
-### Getting Help
-- **Logs**: Check `logs/` directory for application logs
-- **Health Check**: Visit `http://localhost:8080/api/health`
-- **Metrics**: Visit `http://localhost:8080/actuator/metrics`
-- **GitHub Issues**: Report bugs via GitHub Issues
-- **Documentation**: Check the project wiki for detailed guides
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+### Development Setup
+```bash
+# Clone repository
+git clone https://github.com/your-org/zoom-transcriber.git
+cd zoom-transcriber
 
-### Development Workflow
-1. **Fork the repository** from GitHub
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Follow coding standards** and testing requirements
-4. **Run all tests**: `./gradlew test && cd frontend && npm test`
-5. **Commit changes**: `git commit -m 'Add amazing feature'`
-6. **Push to branch**: `git push origin feature/amazing-feature`
-7. **Submit Pull Request** with comprehensive tests and documentation
+# Start development environment
+docker-compose up --build
 
-### Code Style
-- **Backend**: Follow Google Java Style Guide
-- **Frontend**: Follow Angular Style Guide
-- **Testing**: Maintain >85% test coverage
-- **Documentation**: Update README and API docs for new features
+# Run tests
+docker-compose exec backend ./gradlew test
+```
 
-### License
-This project is licensed under the MIT License - see [LICENSE](LICENSE) for details.
+### Code Quality
+- **Backend**: SpotBugs, PMD, Checkstyle analysis
+- **Frontend**: ESLint, TypeScript strict mode
+- **Testing**: >85% code coverage requirement
+- **Documentation**: Comprehensive API documentation
 
----
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 📞 Support
 
-For issues, questions, or contributions:
-- **Documentation**: Check this README and our wiki
-- **Issues**: Report bugs via GitHub Issues
-- **Discussions**: Use GitHub Discussions for questions and ideas
-- **Email**: Contact our development team at support@zoomtranscriber.com
-
-### Quick Links
-- **Live Demo**: [https://demo.zoomtranscriber.com](https://demo.zoomtranscriber.com)
-- **API Documentation**: [https://docs.zoomtranscriber.com](https://docs.zoomtranscriber.com)
-- **Status Page**: [https://status.zoomtranscriber.com](https://status.zoomtranscriber.com)
+For support and questions:
+- Create an issue in the GitHub repository
+- Check the troubleshooting section above
+- Review the logs for error details
 
 ---
 
-*Built with ❤️ for productive meetings*
+**Built with ❤️ using modern web technologies**

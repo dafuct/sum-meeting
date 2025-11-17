@@ -10,84 +10,6 @@ spring:
   profiles:
     active: dev
 
----
-# Development Profile
-spring:
-  config:
-    activate:
-      on-profile: dev
-
-  # Database configuration for development
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: ""
-
-  # JPA/Hibernate configuration
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-
-  # Redis configuration for development (optional)
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password:
-
-  # Spring Session Configuration
-  # Note: This application uses stateless JWT authentication, so Spring Session is not required
-
----
-# Production Profile
-spring:
-  config:
-    activate:
-      on-profile: prod
-
-  datasource:
-    url: jdbc:mysql://mysql-cluster-writer:3306/zoom_transcriber?useSSL=true&requireSSL=true
-    username: ${DB_USERNAME:zoom_user}
-    password: ${DB_PASSWORD:zoom_pass}
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: false
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
-
-  data:
-    redis:
-      host: redis-cluster
-      port: 6379
-      password: ${REDIS_PASSWORD}
-
----
-# Common Configuration (applies to all profiles)
-spring:
-  # Jackson configuration
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-      indent-output: true
-    deserialization:
-      fail-on-unknown-properties: false
-
-  # Web configuration
-  webflux:
-    base-path: /api
-    
 # Management and Actuator Configuration
 management:
   endpoints:
@@ -127,7 +49,7 @@ management:
       enabled: true
     os:
       enabled: true
-      
+
 # Logging Configuration
 logging:
   level:
@@ -146,4 +68,68 @@ logging:
       max-file-size: 100MB
       max-history: 30
       total-size-cap: 10GB
-      
+
+---
+# Development Profile
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:h2:mem:zoom-transcriber
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+  webflux:
+    base-path: /api
+
+---
+# Production Profile
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:mysql://mysql-cluster-writer:3306/zoom_transcriber?useSSL=true&requireSSL=true
+    username: ${DB_USERNAME:zoom_user}
+    password: ${DB_PASSWORD:zoom_pass}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+  data:
+    redis:
+      host: redis-cluster
+      port: 6379
+      password: ${REDIS_PASSWORD}
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      indent-output: true
+    deserialization:
+      fail-on-unknown-properties: false
+  webflux:
+    base-path: /api
